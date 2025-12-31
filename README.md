@@ -1,2 +1,0 @@
-# seatplan
-seatplan

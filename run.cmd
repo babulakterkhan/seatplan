@@ -1,0 +1,1 @@
+.\bin\python.exe .\src\app.py

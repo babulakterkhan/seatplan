@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>Exam Seat Plan - Professional Layout</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .no-print {
+            text-align: center;
+            padding: 20px;
+            background: #fff;
+            border-bottom: 1px solid #ccc;
+            line-height: 2.2;
+        }
+        .btn {
+            padding: 10px 25px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .input-field {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            width: 190mm;
+            margin: 10px auto;
+        }
+        .seat-card {
+            height: 52mm;
+            border: 2px solid #000;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            background: #fff;
+        }
+        .inner-border {
+            margin: 3px;
+            border: 1px solid #000;
+            height: 94%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        /* নতুন লেআউট স্টাইল */
+        .institute-name {
+            font-size: 16pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+        .exam-name {
+            font-size: 13pt;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .session-text {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .roll {
+            font-size: 26pt;
+            font-weight: bold;
+        }
+        @media print {
+            .no-print { display: none; }
+            body { background-color: #fff; }
+            .container { margin: 0 auto; }
+            .seat-card { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print">
+        <strong>Seat Plan Settings:</strong><br>
+        Institute Name: <input type="text" id="instName" placeholder="আপনার প্রতিষ্ঠানের নাম লিখুন" style="width: 350px;" class="input-field"><br>
+        Exam Name: <input type="text" id="examType" value="BASIC TRADE EXAM" style="width: 200px;" class="input-field"> 
+        Year: <input type="text" id="examYear" value="2025" style="width: 60px;" class="input-field"><br>
+        Session: 
+        <select id="sessionType" class="input-field">
+            <option value="January-June">January-June</option>
+            <option value="July-December" selected>July-December</option>
+        </select>
+        Year: <input type="text" id="sessionYear" value="2024" style="width: 60px;" class="input-field"><br>
+        Roll Range: <input type="number" id="start" value="1" style="width: 50px;" class="input-field"> to 
+        <input type="number" id="end" value="10" style="width: 50px;" class="input-field">
+        <button class="btn" onclick="generateCards()">Update List</button>
+        <button class="btn" style="background-color: #007bff;" onclick="window.print()">Print Now</button>
+    </div>
+
+    <div class="container" id="card-container"></div>
+
+    <script>
+        function generateCards() {
+            const instName = document.getElementById('instName').value || "INSTITUTE NAME";
+            const examType = document.getElementById('examType').value;
+            const start = parseInt(document.getElementById('start').value);
+            const end = parseInt(document.getElementById('end').value);
+            const exYear = document.getElementById('examYear').value;
+            const sessYear = document.getElementById('sessionYear').value;
+            const sessType = document.getElementById('sessionType').value;
+            
+            const container = document.getElementById('card-container');
+            container.innerHTML = '';
+
+            for (let i = start; i <= end; i++) {
+                container.innerHTML += `
+                    <div class="seat-card">
+                        <div class="inner-border">
+                            <div class="institute-name">${instName}</div>
+                            <div class="exam-name">${examType}-${exYear}</div>
+                            <div class="session-text">${sessType}/${sessYear}</div>
+                            <div class="roll">Roll-${i}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        generateCards();
+    </script>
+
+</body>
+</html>

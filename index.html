@@ -95,6 +95,25 @@
     </style>
 </head>
 <body>
+<div id="login-screen" style="position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+  <h3>অনুগ্রহ করে পাসওয়ার্ড দিন</h3>
+  <input type="password" id="pass-input" style="padding:10px; margin-bottom:10px; border-radius:5px; border:1px solid #ccc;">
+  <button onclick="checkPass()" style="padding:10px 20px; cursor:pointer; background:#28a745; color:white; border:none; border-radius:5px;">Login</button>
+  <p id="error-msg" style="color:red; display:none;">ভুল পাসওয়ার্ড!</p>
+</div>
+
+<script>
+function checkPass() {
+  const input = document.getElementById('pass-input').value;
+  const correctPass = "12345678"; // আপনার পাসওয়ার্ড এখানে লিখুন
+  
+  if (input === correctPass) {
+    document.getElementById('login-screen').style.display = 'none';
+  } else {
+    document.getElementById('error-msg').style.display = 'block';
+  }
+}
+</script>
 
     <div class="no-print">
         <strong>Seat Plan Settings:</strong><br>

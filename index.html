@@ -6,7 +6,7 @@
     <style>
         @page {
             size: A4;
-            margin: 10mm;
+            margin: 8mm;
         }
         body {
             font-family: Arial, sans-serif;
@@ -35,16 +35,17 @@
             padding: 5px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            margin: 2px;
         }
         .container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            width: 190mm;
-            margin: 10px auto;
+            gap: 40px;
+            width: 202mm;
+            margin: 5px auto;
         }
         .seat-card {
-            height: 52mm;
+            height: 50mm; /* তথ্য বাড়ায় উচ্চতা কিছুটা বাড়ানো হয়েছে */
             border: 2px solid #000;
             box-sizing: border-box;
             display: flex;
@@ -52,6 +53,7 @@
             justify-content: center;
             text-align: center;
             background: #fff;
+            position: relative;
         }
         .inner-border {
             margin: 3px;
@@ -61,29 +63,33 @@
             flex-direction: column;
             justify-content: center;
         }
-        /* নতুন লেআউট স্টাইল */
         .institute-name {
             font-size: 16pt;
             font-weight: bold;
             text-transform: uppercase;
-            margin-bottom: 2px;
             border-bottom: 1px solid #000;
+            margin: 0 10px 5px 10px;
             padding-bottom: 2px;
-            margin-left: 10px;
-            margin-right: 10px;
         }
-        .exam-name {
-            font-size: 13pt;
+        .exam-info {
+            font-size: 11pt;
             font-weight: bold;
-            margin-top: 5px;
         }
-        .session-text {
-            font-size: 12pt;
-            font-weight: bold;
-            margin-bottom: 8px;
+        .code-section {
+            font-size: 10pt;
+            margin: 5px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            font-weight: normal;
         }
         .roll {
-            font-size: 26pt;
+            font-size: 24pt;
+            font-weight: bold;
+            margin-top: 2px;
+        }
+        .session-text {
+            font-size: 11pt;
             font-weight: bold;
         }
         @media print {
@@ -95,39 +101,34 @@
     </style>
 </head>
 <body>
+
 <div id="login-screen" style="position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-  <h3>অনুগ্রহ করে পাসওয়ার্ড দিন</h3>
+  <h3>অনুগ্রহ করে পাসওয়ার্ড দিন</h3>
   <input type="password" id="pass-input" style="padding:10px; margin-bottom:10px; border-radius:5px; border:1px solid #ccc;">
   <button onclick="checkPass()" style="padding:10px 20px; cursor:pointer; background:#28a745; color:white; border:none; border-radius:5px;">Login</button>
-  <p id="error-msg" style="color:red; display:none;">ভুল পাসওয়ার্ড!</p>
+  <p id="error-msg" style="color:red; display:none;">ভুল পাসওয়ার্ড!</p>
 </div>
-
-<script>
-function checkPass() {
-  const input = document.getElementById('pass-input').value;
-  const correctPass = "12345678"; // আপনার পাসওয়ার্ড এখানে লিখুন
-  
-  if (input === correctPass) {
-    document.getElementById('login-screen').style.display = 'none';
-  } else {
-    document.getElementById('error-msg').style.display = 'block';
-  }
-}
-</script>
 
     <div class="no-print">
         <strong>Seat Plan Settings:</strong><br>
-        Institute Name: <input type="text" id="instName" placeholder="আপনার প্রতিষ্ঠানের নাম লিখুন" style="width: 350px;" class="input-field"><br>
-        Exam Name: <input type="text" id="examType" value="BASIC TRADE EXAM" style="width: 200px;" class="input-field"> 
+        Institute: <input type="text" id="instName" placeholder="প্রতিষ্ঠানের নাম" style="width: 300px;" class="input-field">
+        Exam: <input type="text" id="examType" value="BASIC TRADE EXAM" style="width: 180px;" class="input-field">
         Year: <input type="text" id="examYear" value="2025" style="width: 60px;" class="input-field"><br>
+        
+        Curriculum Code: <input type="text" id="curCode" value="38" style="width: 50px;" class="input-field">
+        Trade Code: <input type="text" id="tradeCode" value="123" style="width: 60px;" class="input-field">
+        Session Code: <input type="text" id="sessCode" value="24" style="width: 50px;" class="input-field"><br>
+
         Session: 
         <select id="sessionType" class="input-field">
             <option value="January-June">January-June</option>
             <option value="July-December" selected>July-December</option>
         </select>
-        Year: <input type="text" id="sessionYear" value="2024" style="width: 60px;" class="input-field"><br>
-        Roll Range: <input type="number" id="start" value="1" style="width: 50px;" class="input-field"> to 
-        <input type="number" id="end" value="10" style="width: 50px;" class="input-field">
+        Sess. Year: <input type="text" id="sessionYear" value="2024" style="width: 60px;" class="input-field"><br>
+        
+        Roll Range: <input type="number" id="start" value="1" style="width: 60px;" class="input-field"> to 
+        <input type="number" id="end" value="10" style="width: 60px;" class="input-field">
+        
         <button class="btn" onclick="generateCards()">Update List</button>
         <button class="btn" style="background-color: #007bff;" onclick="window.print()">Print Now</button>
     </div>
@@ -135,14 +136,30 @@ function checkPass() {
     <div class="container" id="card-container"></div>
 
     <script>
+        function checkPass() {
+          const input = document.getElementById('pass-input').value;
+          const correctPass = "12345678";
+          if (input === correctPass) {
+            document.getElementById('login-screen').style.display = 'none';
+          } else {
+            document.getElementById('error-msg').style.display = 'block';
+          }
+        }
+
         function generateCards() {
             const instName = document.getElementById('instName').value || "INSTITUTE NAME";
             const examType = document.getElementById('examType').value;
+            const exYear = document.getElementById('examYear').value;
+            
+            const curCode = document.getElementById('curCode').value;
+            const tradeCode = document.getElementById('tradeCode').value;
+            const sessCode = document.getElementById('sessCode').value;
+            
+            const sessType = document.getElementById('sessionType').value;
+            const sessYear = document.getElementById('sessionYear').value;
+            
             const start = parseInt(document.getElementById('start').value);
             const end = parseInt(document.getElementById('end').value);
-            const exYear = document.getElementById('examYear').value;
-            const sessYear = document.getElementById('sessionYear').value;
-            const sessType = document.getElementById('sessionType').value;
             
             const container = document.getElementById('card-container');
             container.innerHTML = '';
@@ -152,9 +169,14 @@ function checkPass() {
                     <div class="seat-card">
                         <div class="inner-border">
                             <div class="institute-name">${instName}</div>
-                            <div class="exam-name">${examType}-${exYear}</div>
-                            <div class="session-text">${sessType}/${sessYear}</div>
-                            <div class="roll">Roll-${i}</div>
+                            <div class="exam-info">${examType} - ${exYear}</div>
+                            <div class="code-section">
+                                <span>Cur. Code: <b>${curCode}</b></span>
+                                <span>Trade Code: <b>${tradeCode}</b></span>
+                                <span>Sess. Code: <b>${sessCode}</b></span>
+                            </div>
+                            <div class="session-text">Session: ${sessType}-${sessYear}</div>
+                            <div class="roll">Roll: ${i}</div>
                         </div>
                     </div>
                 `;

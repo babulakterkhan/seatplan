@@ -22,14 +22,15 @@
             line-height: 2.2;
         }
         .btn {
-            padding: 10px 25px;
-            font-size: 16px;
+            padding: 10px 20px;
+            font-size: 14px;
             background-color: #28a745;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin-left: 10px;
+            margin-left: 5px;
+            font-weight: bold;
         }
         .input-field {
             padding: 5px;
@@ -45,7 +46,7 @@
             margin: 5px auto;
         }
         .seat-card {
-            height: 50mm; /* তথ্য বাড়ায় উচ্চতা কিছুটা বাড়ানো হয়েছে */
+            height: 50mm;
             border: 2px solid #000;
             box-sizing: border-box;
             display: flex;
@@ -104,65 +105,158 @@
 
 <div id="login-screen" style="position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center;">
   <h3>অনুগ্রহ করে পাসওয়ার্ড দিন</h3>
-  <input type="password" id="pass-input" style="padding:10px; margin-bottom:10px; border-radius:5px; border:1px solid #ccc;">
+  <input type="password" id="pass-input" style="padding:10px; margin-bottom:10px; border-radius:5px; border:1px solid #ccc;" onkeypress="if(event.key==='Enter') checkPass()">
   <button onclick="checkPass()" style="padding:10px 20px; cursor:pointer; background:#28a745; color:white; border:none; border-radius:5px;">Login</button>
   <p id="error-msg" style="color:red; display:none;">ভুল পাসওয়ার্ড!</p>
 </div>
 
     <div class="no-print">
-        <strong>Seat Plan Settings:</strong><br>
-        Institute: <input type="text" id="instName" placeholder="প্রতিষ্ঠানের নাম" style="width: 300px;" class="input-field">
-        Exam: <input type="text" id="examType" value="BASIC TRADE EXAM" style="width: 180px;" class="input-field">
-        Year: <input type="text" id="examYear" value="2025" style="width: 60px;" class="input-field"><br>
+        <div style="float: right; margin-right: 20px;">
+            <button class="btn" style="background: #555;" onclick="changePassword()">Change Password</button>
+            <button class="btn" style="background: #dc3545;" onclick="logout()">Logout</button>
+        </div>
         
-        Curriculum Code: <input type="text" id="curCode" value="38" style="width: 50px;" class="input-field">
-        Trade Code: <input type="text" id="tradeCode" value="123" style="width: 60px;" class="input-field">
-        Session Code: <input type="text" id="sessCode" value="24" style="width: 50px;" class="input-field"><br>
+        <strong>Seat Plan Settings:</strong><br>
+        Institute: <input type="text" id="instName" placeholder="প্রতিষ্ঠানের নাম" style="width: 300px;" class="input-field" oninput="saveCurrentData()">
+        Exam: <input type="text" id="examType" value="BASIC TRADE EXAM" style="width: 180px;" class="input-field" oninput="saveCurrentData()">
+        Year: <input type="text" id="examYear" value="2025" style="width: 60px;" class="input-field" oninput="saveCurrentData()"><br>
+        
+        Curriculum Code: <input type="text" id="curCode" value="38" style="width: 50px;" class="input-field" oninput="saveCurrentData()">
+        Trade Code: <input type="text" id="tradeCode" value="123" style="width: 60px;" class="input-field" oninput="saveCurrentData()">
+        Session Code: <input type="text" id="sessCode" value="24" style="width: 50px;" class="input-field" oninput="saveCurrentData()"><br>
 
         Session: 
-        <select id="sessionType" class="input-field">
+        <select id="sessionType" class="input-field" onchange="saveCurrentData()">
             <option value="January-June">January-June</option>
             <option value="July-December" selected>July-December</option>
         </select>
-        Sess. Year: <input type="text" id="sessionYear" value="2024" style="width: 60px;" class="input-field"><br>
+        Sess. Year: <input type="text" id="sessionYear" value="2024" style="width: 60px;" class="input-field" oninput="saveCurrentData()"><br>
         
-        Roll Range: <input type="number" id="start" value="1" style="width: 60px;" class="input-field"> to 
-        <input type="number" id="end" value="10" style="width: 60px;" class="input-field">
-        
-        <button class="btn" onclick="generateCards()">Update List</button>
+        Roll Range: <input type="number" id="start" value="1" style="width: 60px;" class="input-field" oninput="saveCurrentData()"> to 
+        <input type="number" id="end" value="10" style="width: 60px;" class="input-field" oninput="saveCurrentData()">
+        <br>
+        <button class="btn" onclick="generateCards()">Generate View</button>
         <button class="btn" style="background-color: #007bff;" onclick="window.print()">Print Now</button>
+        <button class="btn" style="background-color: #6f42c1;" onclick="exportData()">Backup (JSON)</button>
+        <button class="btn" style="background-color: #fd7e14;" onclick="document.getElementById('file-input').click()">Restore</button>
+        <input type="file" id="file-input" style="display:none" onchange="importData(event)">
     </div>
 
     <div class="container" id="card-container"></div>
 
     <script>
-        function checkPass() {
-          const input = document.getElementById('pass-input').value;
-          const correctPass = "12345678";
-          if (input === correctPass) {
+        // পাসওয়ার্ড এবং সেশন হ্যান্ডলিং
+        let masterPass = localStorage.getItem('app_password') || "12345678";
+
+        if (sessionStorage.getItem('isLoggedIn') === 'true') {
             document.getElementById('login-screen').style.display = 'none';
-          } else {
-            document.getElementById('error-msg').style.display = 'block';
-          }
+        }
+
+        function checkPass() {
+            const input = document.getElementById('pass-input').value;
+            if (input === masterPass) {
+                document.getElementById('login-screen').style.display = 'none';
+                sessionStorage.setItem('isLoggedIn', 'true');
+            } else {
+                document.getElementById('error-msg').style.display = 'block';
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('isLoggedIn');
+            location.reload();
+        }
+
+        function changePassword() {
+            const oldPass = prompt("বর্তমান পাসওয়ার্ড দিন:");
+            if (oldPass === masterPass) {
+                const newPass = prompt("নতুন পাসওয়ার্ড দিন (কমপক্ষে ৪ অক্ষর):");
+                if (newPass && newPass.length >= 4) {
+                    localStorage.setItem('app_password', newPass);
+                    masterPass = newPass;
+                    alert("পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে!");
+                } else {
+                    alert("পাসওয়ার্ড পরিবর্তন বাতিল বা ইনপুট সঠিক নয়।");
+                }
+            } else if (oldPass !== null) {
+                alert("বর্তমান পাসওয়ার্ড ভুল!");
+            }
+        }
+
+        // ডাটা সেভ করার ফাংশন
+        function saveCurrentData() {
+            const data = {
+                inst: document.getElementById('instName').value,
+                exam: document.getElementById('examType').value,
+                year: document.getElementById('examYear').value,
+                cur: document.getElementById('curCode').value,
+                trade: document.getElementById('tradeCode').value,
+                sessCode: document.getElementById('sessCode').value,
+                sessType: document.getElementById('sessionType').value,
+                sessYear: document.getElementById('sessionYear').value,
+                start: document.getElementById('start').value,
+                end: document.getElementById('end').value
+            };
+            localStorage.setItem('exam_seat_data', JSON.stringify(data));
+            generateCards(); 
+        }
+
+        // ডাটা লোড করার ফাংশন
+        function loadSavedData() {
+            const savedData = localStorage.getItem('exam_seat_data');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                document.getElementById('instName').value = data.inst || "";
+                document.getElementById('examType').value = data.exam || "BASIC TRADE EXAM";
+                document.getElementById('examYear').value = data.year || "2025";
+                document.getElementById('curCode').value = data.cur || "38";
+                document.getElementById('tradeCode').value = data.trade || "123";
+                document.getElementById('sessCode').value = data.sessCode || "24";
+                document.getElementById('sessionType').value = data.sessType || "July-December";
+                document.getElementById('sessionYear').value = data.sessYear || "2024";
+                document.getElementById('start').value = data.start || "1";
+                document.getElementById('end').value = data.end || "10";
+            }
+            generateCards();
+        }
+
+        // ব্যাকআপ এক্সপোর্ট/ইমপোর্ট
+        function exportData() {
+            const data = localStorage.getItem('exam_seat_data');
+            if (!data) return alert("সেভ করার মত কোনো ডাটা নেই!");
+            const blob = new Blob([data], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'SeatPlan_Backup.json';
+            a.click();
+        }
+
+        function importData(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                localStorage.setItem('exam_seat_data', e.target.result);
+                loadSavedData();
+                alert("ডাটা সফলভাবে রিস্টোর হয়েছে!");
+            };
+            reader.readAsText(event.target.files[0]);
         }
 
         function generateCards() {
             const instName = document.getElementById('instName').value || "INSTITUTE NAME";
             const examType = document.getElementById('examType').value;
             const exYear = document.getElementById('examYear').value;
-            
             const curCode = document.getElementById('curCode').value;
             const tradeCode = document.getElementById('tradeCode').value;
             const sessCode = document.getElementById('sessCode').value;
-            
             const sessType = document.getElementById('sessionType').value;
             const sessYear = document.getElementById('sessionYear').value;
-            
             const start = parseInt(document.getElementById('start').value);
             const end = parseInt(document.getElementById('end').value);
             
             const container = document.getElementById('card-container');
             container.innerHTML = '';
+
+            if (isNaN(start) || isNaN(end)) return;
 
             for (let i = start; i <= end; i++) {
                 container.innerHTML += `
@@ -182,7 +276,8 @@
                 `;
             }
         }
-        generateCards();
+
+        window.onload = loadSavedData;
     </script>
 
 </body>
